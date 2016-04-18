@@ -10,11 +10,11 @@ public class testDao {
 		UserDao dao = new UserDao();
 		
 		User user = new User();
-		user.setId("juniq");
-		user.setName("juniqlim");
+		user.setId("jjunss");
+		user.setName("jjunss!");
 		user.setPassword("1234");
 		
-//		dao.add(user);
+		dao.add(user);
 		
 		System.out.println(user.getId() + " ¼º°ø");
 		
