@@ -12,22 +12,28 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import springbook.user.domain.User;
 
 public class UserDao {
+	private JdbcContext jdbcContext;
 	private DataSource dataSource; 
 	
 	public void setDataSource(DataSource dataSource) {
+		jdbcContext = new JdbcContext();
+		jdbcContext.setDataSource(dataSource);
 		this.dataSource = dataSource;
 	}
-
-	public void add(User user) throws SQLException {
-		Connection c = dataSource.getConnection();
-		PreparedStatement ps = c.prepareStatement(
-			"insert into users(id, name, password) values(?, ?, ?)");
-		ps.setString(1 , user.getId());
-		ps.setString(2 , user.getName());
-		ps.setString(3 , user.getPassword());
-		ps.executeUpdate();
-		ps. close();
-		c.close();
+	
+	public void add(final User user) throws SQLException {
+		jdbcContext.workWithStatementStrategy(
+				new StatementStrategy() {
+					public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+						PreparedStatement ps = c.prepareStatement(
+								"insert into users(id, name, password) values(?, ?, ?)");
+						ps.setString(1 , user.getId());
+						ps.setString(2 , user.getName());
+						ps.setString(3 , user.getPassword());
+							
+						return ps;
+					}
+				});
 	}
 	
 	public User get(String id) throws SQLException {
@@ -51,33 +57,18 @@ public class UserDao {
 		return user;
 	}
 	
-	public void deleteAll() throws Exception {
-		Connection c = null;
-		PreparedStatement ps = null;
-		
-		try {
-			c = dataSource.getConnection();
-			ps = c.prepareStatement("delete from users");
-			ps.executeUpdate();
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			if (ps != null) {
-				try {
-					ps.close();
-				} catch (Exception e2) {
-				}
-			}
-			if (c != null) {
-				try {
-					c.close();
-				} catch (Exception e2) {
-				}
-			}
-		}
+	public void deleteAll() throws SQLException {
+		jdbcContext.workWithStatementStrategy(
+				new StatementStrategy() {
+					public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+						PreparedStatement ps;
+						ps = c.prepareStatement("delete from users");
+						return ps;
+					}
+				});
 	}
 	
-	public int getCount() throws Exception {
+	public int getCount() throws SQLException {
 		Connection c = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -88,25 +79,25 @@ public class UserDao {
 			rs = ps.executeQuery();
 			rs.next();
 			count = rs.getInt(1);
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			throw e;
 		} finally {
 			if (ps != null) {
 				try {
 					ps.close();
-				} catch (Exception e2) {
+				} catch (SQLException e2) {
 				}
 			}
 			if (c != null) {
 				try {
 					c.close();
-				} catch (Exception e2) {
+				} catch (SQLException e2) {
 				}
 			}
 			if (rs != null) {
 				try {
 					rs.close();
-				} catch (Exception e2) {
+				} catch (SQLException e2) {
 				}
 			}
 		}
