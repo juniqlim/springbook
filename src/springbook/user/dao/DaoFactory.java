@@ -11,8 +11,8 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 @Configuration
 public class DaoFactory {
 	@Bean
-	public UserDao userDao() throws ClassNotFoundException , SQLException {
-		UserDao userDao = new UserDao();
+	public UserDaoJdbc userDao() throws ClassNotFoundException , SQLException {
+		UserDaoJdbc userDao = new UserDaoJdbc();
 		userDao.setDataSource(new SimpleDriverDataSource());
 		return userDao;
 	}

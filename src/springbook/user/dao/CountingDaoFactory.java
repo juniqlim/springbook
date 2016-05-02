@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CountingDaoFactory {
 	@Bean
-	public UserDao userDao() throws ClassNotFoundException , SQLException {
-		return new UserDao();
+	public UserDaoJdbc userDao() throws ClassNotFoundException , SQLException {
+		return new UserDaoJdbc();
 	}
 	
 	@Bean
