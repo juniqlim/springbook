@@ -3,14 +3,15 @@ package springbook.test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
 import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
 import static springbook.user.service.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +38,7 @@ import springbook.user.service.UserServiceImpl;
 import springbook.user.service.UserServiceImpl.TempUserService;
 import springbook.user.service.UserServiceImpl.TestUserServiceException;
 import springbook.user.service.UserServiceTx;
+import springbook.user.service.UserServiceTxHandler;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations="/applicationContext.xml")
@@ -210,6 +212,31 @@ public class UserServiceTest {
 		UserServiceTx txUserService = new UserServiceTx();
 		txUserService.setTransactionManager(transactionManager);
 		txUserService.setUserService(testUserService);
+		
+		userDao.deleteAll();
+		for(User user : users) userDao.add(user);
+		
+		try {
+			txUserService.upgradeLevels();
+			fail("TestUserServiceException expected");
+		} catch (TestUserServiceException e) {
+			// TODO: handle exception
+		}
+		
+		checkLevelUpgraded(users.get(3), false);
+	}
+	
+	@Test
+	public void upgradeAllOrNothing2() throws Exception {
+		UserServiceImpl testUserService = new TempUserService(users.get(1).getId());
+		testUserService.setUserDao(this.userDao);
+		testUserService.setMailSender(mailSender);
+		
+		UserServiceTxHandler txHandler = new UserServiceTxHandler();
+		txHandler.setTarget(testUserService);
+		txHandler.setTransactionManager(transactionManager);
+		txHandler.setPattern("upgradeLevels");
+		UserService txUserService = (UserService)Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] {UserService.class}, txHandler);
 		
 		userDao.deleteAll();
 		for(User user : users) userDao.add(user);
