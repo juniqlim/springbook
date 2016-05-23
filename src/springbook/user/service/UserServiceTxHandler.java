@@ -42,7 +42,6 @@ public class UserServiceTxHandler implements InvocationHandler {
 		} catch (InvocationTargetException e) {
 			transactionManager.rollback(status);
 			throw e.getTargetException();
-			
 		}
 	}
 }

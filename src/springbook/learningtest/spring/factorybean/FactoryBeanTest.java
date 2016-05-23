@@ -20,7 +20,6 @@ public class FactoryBeanTest {
 		Object message = context.getBean("message");
 		assertThat(message, is(Message.class));
 		assertThat(((Message)message).getText(), is("Factory Bean"));
-		
 	}
 	
 	@Test

@@ -1,39 +1,29 @@
 package springbook.user.service;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import springbook.user.domain.User;
-
-public class UserServiceTx implements UserService {
-	UserService userService;
+public class TransactionAdvice implements MethodInterceptor {
 	PlatformTransactionManager transactionManager;
 	
 	public void setTransactionManager(PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
 	}
-	
-	public void setUserService(UserService userService) {
-		this.userService = userService;
-	}
-	
-	@Override
-	public void add(User user) {
-		userService.add(user);
-	}
 
 	@Override
-	public void upgradeLevels() {
+	public Object invoke(MethodInvocation invocation) throws Throwable {
 		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
 		
 		try {
-			userService.upgradeLevels();
-			transactionManager.commit(status);
+			Object ret = invocation.proceed();
+			this.transactionManager.commit(status);
+			return ret;
 		} catch (RuntimeException e) {
-			transactionManager.rollback(status);
+			this.transactionManager.rollback(status);
 			throw e;
-			
 		}
 	}
 	
