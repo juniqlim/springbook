@@ -66,20 +66,6 @@ public class UserServiceImpl implements UserService {
 		userDao.add(user);
 	}
 	
-	public static class TempUserService extends UserServiceImpl {
-		private String id;
-		
-		public TempUserService(String id) {
-			this.id = id;
-		}
-		
-		protected void upgradeLevel(User user) {
-			if (user.getId().equals(this.id)) throw new TestUserServiceException();
-			user.upgradeLevel();
-			userDao.update(user);
-		}
-	}
-	
 	public static class TestUserServiceException extends RuntimeException {
 
 		/**
